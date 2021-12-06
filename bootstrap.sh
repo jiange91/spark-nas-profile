@@ -1,6 +1,6 @@
 #!/bin/bash
-duty='None'
-mode=${1}
+duty=${1}
+# mode=${1}
 JUPYTER_PASSWORD=${2:-"root"}
 set -e
 sudo apt-get update;

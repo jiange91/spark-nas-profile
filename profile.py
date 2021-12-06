@@ -81,10 +81,6 @@ nfsLan.best_effort       = True
 nfsLan.vlan_tagging      = True
 nfsLan.link_multiplexing = True
 
-# DSnode that represents remote dataset
-dsnode = request.RemoteBlockstore("dsnode", nfsDirectory)
-dsnode.dataset = "urn:publicid:IDN+utah.cloudlab.us:orion-pg0+stdataset+criteo_petastorm"
-
 # Create master node and link to nfsLan
 master = request.RawPC('master')
 master.routable_control_ip = True

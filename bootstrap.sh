@@ -33,7 +33,7 @@ sudo cp /usr/local/spark/conf/spark-env.sh.template /usr/local/spark/conf/spark-
 sudo cp /usr/local/spark/conf/slaves.template /usr/local/spark/conf/slaves;
 
 pip3 install --upgrade pip
-pip3 install -r requirements.txt --ignore-installed
+pip3 install -r /local/repository/requirements.txt --ignore-installed
 
 
 # setup hadoop
@@ -80,6 +80,7 @@ echo "export PYSPARK_PYTHON=python3.6" | sudo tee -a /usr/local/spark/conf/spark
 
 
 # Jupyter extension configs
+pip3 install jupyter_contrib_nbextensions
 sudo /usr/local/bin/jupyter contrib nbextension install --system ;
 sudo /usr/local/bin/jupyter nbextensions_configurator enable --system ;
 sudo /usr/local/bin/jupyter nbextension enable code_prettify/code_prettify --system ;

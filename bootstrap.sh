@@ -1,6 +1,6 @@
 #!/bin/bash
-duty=${1}
-# mode=${1}
+# duty=${1}
+mode=${1}
 JUPYTER_PASSWORD=${2:-"root"}
 set -e
 sudo apt-get update;
@@ -27,8 +27,8 @@ sudo apt-get -y install docker-ce docker-ce-cli containerd.io
 wget https://archive.apache.org/dist/spark/spark-2.4.5/spark-2.4.5-bin-hadoop2.7.tgz;
 tar xvf spark-2.4.5-bin-hadoop2.7.tgz;
 sudo mv spark-2.4.5-bin-hadoop2.7 /usr/local/spark;
-echo export PATH="$PATH:/usr/local/spark/bin" > ~/.bashrc;
-echo export SPARK_HOME="/usr/local/spark" >> ~/.bashrc;
+echo "export PATH=$PATH:/usr/local/spark/bin" > ~/.bashrc;
+echo "export SPARK_HOME=/usr/local/spark" >> ~/.bashrc;
 sudo cp /usr/local/spark/conf/spark-env.sh.template /usr/local/spark/conf/spark-env.sh;
 sudo cp /usr/local/spark/conf/slaves.template /usr/local/spark/conf/slaves;
 

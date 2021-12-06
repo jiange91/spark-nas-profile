@@ -104,7 +104,7 @@ dsnode.dataset = "urn:publicid:IDN+utah.cloudlab.us:orion-pg0+stdataset+criteo_p
 # Link between the nfsServer and the ISCSI device that holds the dataset
 dslink = request.Link("dslink")
 dslink.addInterface(dsnode.interface)
-dslink.addInterface(nfsServer.addInterface())
+dslink.addInterface(master.addInterface())
 # Special attributes for this link that we must use.
 dslink.best_effort = True
 dslink.vlan_tagging = True

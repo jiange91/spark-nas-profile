@@ -50,8 +50,8 @@ wget https://archive.apache.org/dist/hadoop/core/hadoop-2.7.3/hadoop-2.7.3.tar.g
 tar -xvf hadoop-2.7.3.tar.gz 
 cp -r /mnt/hadoop-2.7.3/. $HADOOP_HOME/.
 
-sudo cp $HOST_LIST_PATH $HADOOP_HOME/etc/hadoop/slaves
-echo "master" | sudo tee $HADOOP_HOME/etc/hadoop/workers
+sudo cp $HOST_LIST_PATH $HADOOP_HOME/etc/hadoop/workers
+# echo "master" | sudo tee $HADOOP_HOME/etc/hadoop/workers
 echo "export HADOOP_HOME=$HADOOP_HOME" | sudo tee -a ~/.bashrc
 echo "export HADOOP_PREFIX=$HADOOP_HOME" | sudo tee -a ~/.bashrc
 echo "export PATH=$PATH:$HADOOP_HOME/bin:$HADOOP_HOME/sbin" | sudo tee -a ~/.bashrc
@@ -102,8 +102,8 @@ source ~/.bashrc
 # Running Spark deamons
 if [ "$duty" = "m" ]; then
 	sudo bash /usr/local/spark/sbin/start-master.sh
-  $HADOOP_PREFIX/bin/hdfs namenode -format "spark_cluster"
-  $HADOOP_PREFIX/sbin/hadoop-daemon.sh --script hdfs start namenode
+    sudo $HADOOP_PREFIX/bin/hdfs namenode -format "spark_cluster"
+    sudo $HADOOP_PREFIX/sbin/hadoop-daemon.sh --script hdfs start namenode
   # $HADOOP_PREFIX/sbin/yarn-daemon.sh start resourcemanager
   # $HADOOP_PREFIX/sbin/yarn-daemons.sh start nodemanager
 	# sudo nohup socat TCP-LISTEN:8081,fork TCP:${LOCAL_IP}:8080 > /dev/null 2>&1 &
@@ -116,8 +116,8 @@ if [ "$duty" = "m" ]; then
 elif [ "$duty" = "s" ]; then
     sudo bash /usr/local/spark/sbin/start-slave.sh $master_ip:7077
 	# sudo nohup socat TCP-LISTEN:8082,fork TCP:${LOCAL_IP}:8081 > /dev/null 2>&1 &	
-    $HADOOP_PREFIX/sbin/hadoop-daemons.sh --script hdfs start datanode
-    $HADOOP_PREFIX/sbin/yarn-daemons.sh start nodemanager
+    sudo $HADOOP_PREFIX/sbin/hadoop-daemons.sh --script hdfs start datanode
+    sudo $HADOOP_PREFIX/sbin/yarn-daemons.sh start nodemanager
 fi
 
 if [ "$mode" = "m" ]; then

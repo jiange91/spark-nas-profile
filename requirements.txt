@@ -1,0 +1,14 @@
+h5py>=2.9
+pyspark==2.4.5
+numpy
+petastorm==0.9.0
+pyarrow==0.16.0
+cloudpickle==1.2.0
+hyperopt>=0.2.3
+transformers>=3.3.1
+flask-restplus>=0.9.2
+Flask-SQLAlchemy>=2.1
+tensorflow==2.4
+keras_tuner
+autokeras
+jupyter

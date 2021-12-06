@@ -96,7 +96,7 @@ master.addService(pg.Execute(
 
 # Special node that represents the ISCSI device where the dataset resides
 dsnode = request.RemoteBlockstore("dsnode", nfsDirectory)
-dsnode.dataset = "urn:publicid:IDN+utah.cloudlab.us:orion-pg0+stdataset+criteo_petastorm"
+dsnode.dataset = "urn:publicid:IDN+utah.cloudlab.us:orion-pg0+stdataset+nfscriteo"
 # Link between the nfsServer and the ISCSI device that holds the dataset
 dslink = request.Link("dslink")
 dslink.addInterface(dsnode.interface)

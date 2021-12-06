@@ -56,10 +56,9 @@ def create_request(request, role, ip, worker_num=None):
         if params.osNodeTypeSlave:
             req.hardware_type = params.osNodeTypeSlave
     req.disk_image = DISK_IMG
-    # local dataset on master
-    # if role == 'm':
-    #     bs = req.Blockstore("bs", "/nfs")
-    #     bs.size = "50GB"
+    # local dataset 
+    bs = req.Blockstore("bs", "/extstore")
+    bs.size = "60GB"
     req.addService(pg.Execute(
         'sh',
         'sudo -H bash /local/repository/bootstrap.sh {} {}> /local/logs/setup.log 2>/local/logs/error.log'.format(role, params.jupyterPassword)))
@@ -106,6 +105,9 @@ dslink.best_effort = True
 dslink.vlan_tagging = True
 dslink.link_multiplexing = True
 
+# Locl dataset for ms
+bs = master.Blockstore("bs", "/extstore")
+bs.size = "60GB"
 
 # Slave Nodes
 for i in range(params.slaveCount):

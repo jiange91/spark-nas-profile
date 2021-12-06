@@ -1,11 +1,5 @@
-"""This profile sets up a simple NFS server and a network of clients. The NFS server uses
-a long term dataset that is persistent across experiments. In order to use this profile,
-you will need to create your own dataset and use that instead of the demonstration 
-dataset below. If you do not need persistant storage, we have another profile that
-uses temporary storage (removed when your experiment ends) that you can use. 
-
-Instructions:
-Click on any node in the topology and choose the `shell` menu item. Your shared NFS directory is mounted at `/nfs` on all nodes."""
+# This file may not be compatible with the development environment for this project
+# And is only for setting up environment in CloudLab
 
 # Import the Portal object.
 import geni.portal as portal
@@ -14,34 +8,72 @@ import geni.rspec.pg as pg
 # Import the Emulab specific extensions.
 import geni.rspec.emulab as emulab
 
-# Create a portal context.
+# Only Ubuntu images supported.
+
+DISK_IMG = 'urn:publicid:IDN+emulab.net+image+emulab-ops//UBUNTU18-64-STD'
 pc = portal.Context()
+pc.defineParameter("slaveCount", "Number of slave nodes",
+                   portal.ParameterType.INTEGER, 1)
+pc.defineParameter("osNodeTypeSlave", "Hardware Type for slaves",
+                   portal.ParameterType.NODETYPE, "",
+                   longDescription='''A specific hardware type to use for each
+                   node. Cloudlab clusters all have machines of specific types.
+                     When you set this field to a value that is a specific
+                     hardware type, you will only be able to instantiate this
+                     profile on clusters with machines of that type.
+                     If unset, when you instantiate the profile, the resulting
+                     experiment may have machines of any available type
+                     allocated.''')
+pc.defineParameter("osNodeTypeMaster", "Hardware Type for master",
+                   portal.ParameterType.NODETYPE, "",
+                   longDescription='''A specific hardware type to use for each
+                   node. Cloudlab clusters all have machines of specific types.
+                     When you set this field to a value that is a specific
+                     hardware type, you will only be able to instantiate this
+                     profile on clusters with machines of that type.
+                     If unset, when you instantiate the profile, the resulting
+                     experiment may have machines of any available type
+                     allocated.''')
+pc.defineParameter("jupyterPassword", "The password of jupyter notebook, default: root",
+                   portal.ParameterType.STRING, 'root')
+pc.defineParameter("publicIPSlaves", "Request public IP addresses for the slaves or not",
+                   portal.ParameterType.BOOLEAN, True)
+params = pc.bindParameters()
+
+
+def create_request(request, role, ip, worker_num=None):
+    if role == 'm':
+        name = 'master'
+    elif role == 's':
+        name = 'worker-{}'.format(worker_num)
+    req = request.RawPC(name)
+    if role == 'm':
+        req.routable_control_ip = True
+        if params.osNodeTypeMaster:
+            req.hardware_type = params.osNodeTypeMaster
+    elif role == 's':
+        req.routable_control_ip = params.publicIPSlaves
+        if params.osNodeTypeSlave:
+            req.hardware_type = params.osNodeTypeSlave
+    req.disk_image = DISK_IMG
+    # local dataset on master
+    # if role == 'm':
+    #     bs = req.Blockstore("bs", "/nfs")
+    #     bs.size = "50GB"
+    req.addService(pg.Execute(
+        'sh',
+        'sudo -H bash /local/repository/bootstrap.sh {} {}> /local/logs/setup.log 2>/local/logs/error.log'.format(role, params.jupyterPassword)))
+    iface = req.addInterface(
+        'eth9', pg.IPv4Address(ip, '255.255.255.0'))
+    return iface
 
 # Create a Request object to start building the RSpec.
 request = pc.makeRequestRSpec()
 
-# Only Ubuntu images supported.
-imageList = [
-    ('urn:publicid:IDN+emulab.net+image+emulab-ops//UBUNTU18-64-STD', 'UBUNTU 18.04'),
-    ('urn:publicid:IDN+emulab.net+image+emulab-ops//UBUNTU16-64-STD', 'UBUNTU 16.04'),
-    ('urn:publicid:IDN+emulab.net+image+emulab-ops//CENTOS7-64-STD', 'CENTOS 7'),
-]
-
-# Do not change these unless you change the setup scripts too.
-nfsServerName = "nfs"
+###########################################
+# Master - NFS server master
 nfsLanName    = "nfsLan"
-nfsDirectory  = "/nfs"
-
-# Number of NFS clients (there is always a server)
-pc.defineParameter("clientCount", "Number of NFS clients",
-                   portal.ParameterType.INTEGER, 2)
-
-pc.defineParameter("osImage", "Select OS image",
-                   portal.ParameterType.IMAGE,
-                   imageList[2], imageList)
-
-# Always need this when using parameters
-params = pc.bindParameters()
+nfsDirectory  = "/var/nfs"
 
 # The NFS network. All these options are required.
 nfsLan = request.LAN(nfsLanName)
@@ -49,18 +81,26 @@ nfsLan.best_effort       = True
 nfsLan.vlan_tagging      = True
 nfsLan.link_multiplexing = True
 
-# The NFS server.
-nfsServer = request.RawPC(nfsServerName)
-nfsServer.disk_image = params.osImage
-# Attach server to lan.
-nfsLan.addInterface(nfsServer.addInterface())
-# Initialization script for the server
-nfsServer.addService(pg.Execute(shell="sh", command="sudo /bin/bash /local/repository/nfs-server.sh"))
+# DSnode that represents remote dataset
+dsnode = request.RemoteBlockstore("dsnode", nfsDirectory)
+dsnode.dataset = "urn:publicid:IDN+utah.cloudlab.us:orion-pg0+stdataset+criteo_petastorm"
+
+# Create master node and link to nfsLan
+master = request.RawPC('master')
+master.routable_control_ip = True
+if params.osNodeTypeMaster:
+    master.hardware_type = params.osNodeTypeMaster
+master.disk_image = DISK_IMG
+master_iface_network = master.addInterface(
+        'eth9', pg.IPv4Address('10.10.1.1', '255.255.255.0'))
+nfsLan.addInterface(master_iface_network)
+master.addService(pg.Execute(
+        'sh',
+        'sudo -H bash /local/repository/bootstrap.sh {} {}> /local/logs/setup.log 2>/local/logs/error.log'.format('m', params.jupyterPassword)))
 
 # Special node that represents the ISCSI device where the dataset resides
 dsnode = request.RemoteBlockstore("dsnode", nfsDirectory)
 dsnode.dataset = "urn:publicid:IDN+utah.cloudlab.us:orion-pg0+stdataset+criteo_petastorm"
-
 # Link between the nfsServer and the ISCSI device that holds the dataset
 dslink = request.Link("dslink")
 dslink.addInterface(dsnode.interface)
@@ -70,14 +110,12 @@ dslink.best_effort = True
 dslink.vlan_tagging = True
 dslink.link_multiplexing = True
 
-# The NFS clients, also attached to the NFS lan.
-for i in range(1, params.clientCount+1):
-    node = request.RawPC("node%d" % i)
-    node.disk_image = params.osImage
-    nfsLan.addInterface(node.addInterface())
-    # Initialization script for the clients
-    node.addService(pg.Execute(shell="sh", command="sudo /bin/bash /local/repository/nfs-client.sh"))
-    pass
 
-# Print the RSpec to the enclosing page.
+# Slave Nodes
+for i in range(params.slaveCount):
+    iface = create_request(
+        request, 's', '10.10.1.{}'.format(i + 2), worker_num=i)
+    nfsLan.addInterface(iface)
+
+# Print the generated rspec
 pc.printRequestRSpec(request)

@@ -37,29 +37,29 @@ pip3 install -r /local/repository/requirements.txt --ignore-installed
 
 source ~/.bashrc
 # setup hadoop
-# HADOOP_HOME=/local/hadoop
-# mkdir $HADOOP_HOME
-# HOST_LIST_PATH=/local/host_list
+HADOOP_HOME=/local/hadoop
+mkdir $HADOOP_HOME
+HOST_LIST_PATH=/local/host_list
 
-# JAVA_HOME=$(readlink -f /usr/bin/java | sed "s:bin/java::")
-# awk 'NR>1 {print $NF}' /etc/hosts | grep -v 'master' > $HOST_LIST_PATH
+JAVA_HOME=$(readlink -f /usr/bin/java | sed "s:bin/java::")
+awk 'NR>1 {print $NF}' /etc/hosts | grep -v 'master' > $HOST_LIST_PATH
 
 
-# cd /mnt
-# wget https://archive.apache.org/dist/hadoop/core/hadoop-2.7.3/hadoop-2.7.3.tar.gz
-# tar -xvf hadoop-2.7.3.tar.gz 
-# cp -r /mnt/hadoop-2.7.3/. $HADOOP_HOME/.
+cd /mnt
+wget https://archive.apache.org/dist/hadoop/core/hadoop-2.7.3/hadoop-2.7.3.tar.gz
+tar -xvf hadoop-2.7.3.tar.gz 
+cp -r /mnt/hadoop-2.7.3/. $HADOOP_HOME/.
 
-# sudo cp $HOST_LIST_PATH $HADOOP_HOME/etc/hadoop/workers
-# # echo "master" | sudo tee $HADOOP_HOME/etc/hadoop/workers
-# echo "export HADOOP_HOME=$HADOOP_HOME" | sudo tee -a ~/.bashrc
-# echo "export HADOOP_PREFIX=$HADOOP_HOME" | sudo tee -a ~/.bashrc
-# echo "export PATH=$PATH:$HADOOP_HOME/bin:$HADOOP_HOME/sbin" | sudo tee -a ~/.bashrc
-# source ~/.bashrc
-# echo "export JAVA_HOME=$JAVA_HOME" | sudo tee -a $HADOOP_HOME/etc/hadoop/hadoop-env.sh
-# cp /local/repository/core-site.xml $HADOOP_HOME/etc/hadoop/core-site.xml
-# cp /local/repository/yarn-site.xml /local/hadoop/etc/hadoop/yarn-site.xml
-# cp /local/repository/hdfs-site.xml /local/hadoop/etc/hadoop/hdfs-site.xml
+sudo cp $HOST_LIST_PATH $HADOOP_HOME/etc/hadoop/workers
+# echo "master" | sudo tee $HADOOP_HOME/etc/hadoop/workers
+echo "export HADOOP_HOME=$HADOOP_HOME" | sudo tee -a ~/.bashrc
+echo "export HADOOP_PREFIX=$HADOOP_HOME" | sudo tee -a ~/.bashrc
+echo "export PATH=$PATH:$HADOOP_HOME/bin:$HADOOP_HOME/sbin" | sudo tee -a ~/.bashrc
+source ~/.bashrc
+echo "export JAVA_HOME=$JAVA_HOME" | sudo tee -a $HADOOP_HOME/etc/hadoop/hadoop-env.sh
+cp /local/repository/core-site.xml $HADOOP_HOME/etc/hadoop/core-site.xml
+cp /local/repository/yarn-site.xml /local/hadoop/etc/hadoop/yarn-site.xml
+cp /local/repository/hdfs-site.xml /local/hadoop/etc/hadoop/hdfs-site.xml
 
 # Spark ips configs
 ips=($(ip -4 addr | grep -oP '(?<=inet\s)\d+(\.\d+){3}'))
@@ -137,7 +137,7 @@ elif [ "$mode" = "s" ]; then
   # sudo bash ~/cerebro-system/nfs_slave.sh
   sudo apt-get install -y nfs-common
   sudo mkdir -p /var/nfs
-  sudo mount $master_ip:/var/nfs /var/nfs
+  sudo mount -o bg $master_ip:/var/nfs /var/nfs
 fi
 echo "Bootstraping complete"
 

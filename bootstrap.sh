@@ -35,7 +35,7 @@ sudo cp /usr/local/spark/conf/spark-env.sh.template /usr/local/spark/conf/spark-
 sudo cp /usr/local/spark/conf/slaves.template /usr/local/spark/conf/slaves;
 
 source ~/.bashrc
-pip3 install --upgrade pip
+python3 -m pip install --upgrade --force-reinstall pip
 pip3 install -r /local/repository/requirements.txt --ignore-installed
 
 
@@ -132,15 +132,15 @@ if [ "$mode" = "m" ]; then
   sudo mkdir -p /var/nfs
   sudo chown nobody:nogroup /var/nfs
   sudo echo "/var/nfs $master_ip (rw,sync,no_subtree_check,no_root_squash)" | sudo tee -a /etc/exports
-  sudo nohup exportfs -a &
-  sudo nohup service nfs-kernel-server start &
+  sudo exportfs -a &
+  sudo service nfs-kernel-server start &
 elif [ "$mode" = "s" ]; then
   sudo bash /usr/local/spark/sbin/start-slave.sh $master_ip:7077
   # sudo chmod 777 ~/cerebro-system/nfs_slave.sh 
   # sudo bash ~/cerebro-system/nfs_slave.sh
   sudo apt-get install -y nfs-common
   sudo mkdir -p /var/nfs
-  sudo nohup mount -o bg $master_ip:/var/nfs /var/nfs &
+  sudo mount $master_ip:/var/nfs /var/nfs &
 fi
 echo "Bootstraping complete"
 

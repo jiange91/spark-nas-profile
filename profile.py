@@ -57,7 +57,7 @@ def create_request(request, role, ip, worker_num=None):
             req.hardware_type = params.osNodeTypeSlave
     req.disk_image = DISK_IMG
     # local dataset 
-    bs = req.Blockstore("bs", "/extstore")
+    bs = req.Blockstore("bs-{}".format(worker_num), "/extstore")
     bs.size = "60GB"
     req.addService(pg.Execute(
         'sh',

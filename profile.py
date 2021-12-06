@@ -55,8 +55,9 @@ def create_request(request, role, ip, worker_num=None):
         if params.osNodeTypeSlave:
             req.hardware_type = params.osNodeTypeSlave
     req.disk_image = DISK_IMG
-    bs = node.Blockstore("bs", "/nfs")
-    bs.size = "50GB"
+    if role == 'm':
+        bs = req.Blockstore("bs", "/nfs")
+        bs.size = "50GB"
     req.addService(pg.Execute(
         'sh',
         'sudo -H bash /local/repository/bootstrap.sh {} {}> /local/logs/setup.log 2>/local/logs/error.log'.format(role, params.jupyterPassword)))
